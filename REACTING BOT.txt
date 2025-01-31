@@ -1,0 +1,86 @@
+#include <ESP32Servo.h>
+
+const int trigPin = 33;
+const int echoPin = 32;
+const int motor1Pin1 = 2;
+const int motor1Pin2 = 4;
+const int motor2Pin1 = 5;
+const int motor2Pin2 = 18;
+
+long duration;
+int distance;
+
+Servo myServo;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(motor2Pin1, OUTPUT);
+  pinMode(motor2Pin2, OUTPUT);
+
+  myServo.attach(25);
+
+  stopMotors();
+  myServo.write(90);
+}
+
+void loop() {
+  distance = getDistance();
+
+  if (distance > 0 && distance < 20) {
+    moveForward();
+    adjustServo(0);
+  } else if (distance >= 20 && distance < 40) {
+    moveForward();
+    adjustServo(45);
+  } else if (distance >= 40 && distance < 60) {
+    stopMotors();
+    adjustServo(90);
+  } else if (distance >= 60 && distance < 80) {
+    stopMotors();
+    adjustServo(135);
+  } else {
+    moveBackward();
+    adjustServo(180);
+  }
+
+  delay(200);
+}
+
+int getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  return duration * 0.034 / 2;
+}
+
+void moveForward() {
+  digitalWrite(motor1Pin1, HIGH);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, HIGH);
+  digitalWrite(motor2Pin2, LOW);
+}
+
+void moveBackward() {
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, HIGH);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, HIGH);
+}
+
+void stopMotors() {
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, LOW);
+}
+
+void adjustServo(int angle) {
+  myServo.write(angle);
+}
